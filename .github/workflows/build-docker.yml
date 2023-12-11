@@ -19,5 +19,5 @@ jobs:
         run: |
           cd ./BackEnd
           docker build --tag=jv_animehub:latest .
-          docker tag jv_animehub JurajVetrak/jv_animehub
-          docker push JurajVetrak/jv_animehub
+          docker tag jv_animehub jurajvetrak/jv_animehub
+          docker push jurajvetrak/jv_animehub
