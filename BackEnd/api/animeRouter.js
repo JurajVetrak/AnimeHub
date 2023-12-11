@@ -117,25 +117,24 @@ router.get("/filter", async (req, res, next) => {
 router.get("/search", async (req, res, next) => {
   try {
     let { user_id } = req.headers;
-    if (!user_id) throwError("No user_id received.");
+    if (!user_id) return next(new Error("No user_id received."));
     if (!(await idExists(db, "user", "user_id", user_id)))
-      throwError("User does not exist");
+      return next(new Error("User does not exist"));
 
-    console.log(req.query);
     let { search_query, limit, offset } = req.query;
     limit = limit ? parseInt(limit) : 10;
     offset = offset ? parseInt(offset) : 0;
-    console.log(limit, offset);
-    if (search_query && search_query != "") {
+
+    if (search_query && search_query !== "") {
       let result = (
-        await db.query(
-          "SELECT anime.*,watchlist.anime_id AS is_added FROM anime LEFT JOIN (SELECT anime_id FROM list_item WHERE user_id = ?) AS watchlist ON anime.anime_id = watchlist.anime_id WHERE MATCH(title,alt_title) AGAINST (? IN NATURAL LANGUAGE MODE) ORDER BY `rank` limit ?,?",
-          [user_id, search_query, offset, limit]
-        )
+          await db.query(
+              "SELECT anime.*,watchlist.anime_id AS is_added FROM anime LEFT JOIN (SELECT anime_id FROM list_item WHERE user_id = ?) AS watchlist ON anime.anime_id = watchlist.anime_id WHERE MATCH(title,alt_title) AGAINST (? IN NATURAL LANGUAGE MODE) ORDER BY `rank` limit ?,?",
+              [user_id, search_query, offset, limit]
+          )
       )[0];
       res.json({ success: true, data: result });
     } else {
-      throwError("Invalid query");
+      return next(new Error("Invalid query"));
     }
   } catch (err) {
     next(err);
